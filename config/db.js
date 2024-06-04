@@ -5,7 +5,7 @@ const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize("taskmanagement", "root", "", {
   host: "localhost",
   dialect: "mysql",
-  logging: false,
+  // logging: false,
 });
 
 // Test the connection

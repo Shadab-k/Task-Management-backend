@@ -83,7 +83,7 @@ router.post(
       });
 
       if (!user) {
-        return res.status(400).json({ success, error: "Invalid credentials" });
+        return res.status(400).json({ success, error: "Invalid email" });
       }
 
       const hashedPassword = crypto
@@ -93,11 +93,12 @@ router.post(
       const isPasswordValid = hashedPassword === user.password;
 
       if (!isPasswordValid) {
-        return res.status(400).json({ success, error: "Invalid credentials" });
+        return res.status(400).json({ success, error: "Invalid password" });
       }
 
-      //   console.log("User Status", user.status);
-      //   console.log("User Profile ID ", user.dc_user_profile_id);
+      if (!user && !isPasswordValid) {
+        return res.status(400).json({ success, error: "Invalid credentials" });
+      }
 
       const data = {
         user: {

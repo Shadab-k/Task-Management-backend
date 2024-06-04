@@ -1,9 +1,18 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
+const User = require('../models/User')  
 
 const projectDetails = sequelize.define(
   "projectDetails",
   {
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id'
+      }
+    },
     project_name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,5 +41,6 @@ const projectDetails = sequelize.define(
     updatedAt: "updatedAt",
   }
 );
+projectDetails.belongsTo(User, { foreignKey: 'userId', targetKey: 'id' });
 
 module.exports = projectDetails;

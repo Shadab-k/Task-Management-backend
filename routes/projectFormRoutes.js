@@ -2,11 +2,13 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 const projectDetails = require("../models/projectDetails");
+const fetchUser = require("../middleware/fetchUser");
 
 const router = express.Router();
 
 router.post(
-  "/project-details",
+  "/project-post-details",
+  fetchUser,
   [
     body("projectName").notEmpty().withMessage("Enter a valid project name"),
     body("startDate").isDate().withMessage("Enter a valid start date"),
@@ -20,10 +22,13 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    const userId = req.user.id;
+
     const { projectName, startDate, endDate, developer, status } = req.body;
 
     try {
       const projectData = await projectDetails.create({
+        userId,
         project_name: projectName,
         start_date: startDate,
         end_date: endDate,
@@ -38,14 +43,11 @@ router.post(
   }
 );
 
-
-
-
 // GET endpoint to fetch all project details
-router.get("/project-form-details", async (req, res) => {
+router.get("/get-project-form-details", fetchUser, async (req, res) => {
   try {
-    // Fetch all project details from the database
-    const allProjects = await projectDetails.findAll();
+    const userId = req.user.id;
+    const allProjects = await projectDetails.findAll({ where: { userId } });
     res.status(200).json(allProjects);
   } catch (error) {
     console.error(error.message);
