@@ -5,7 +5,8 @@ const { body, validationResult } = require("express-validator");
 const crypto = require("crypto"); // Import the crypto module for MD5 hashing
 const jwt = require("jsonwebtoken");
 const fetchUser = require("../middleware/fetchUser");
-const JWT_SECRET = "The User is Identified";
+// const JWT_SECRET = "The User is Identified";
+const secret = process.env.JWT_SECRET;
 
 router.post(
   "/signup",
@@ -52,7 +53,7 @@ router.post(
       });
 
       // Generate JWT token for the user
-      const authToken = jwt.sign({ user: { id: user.id } }, JWT_SECRET);
+      const authToken = jwt.sign({ user: { id: user.id } }, secret);
 
       res.status(201).json({ authToken });
     } catch (error) {
@@ -77,7 +78,7 @@ router.post(
     }
     const { email, password } = req.body;
     try {
-      // Check if user with this username exists
+      // Check if user with this email id exists
       let user = await User.findOne({
         where: { email },
       });
@@ -106,7 +107,7 @@ router.post(
         },
       };
 
-      const authToken = jwt.sign(data, JWT_SECRET);
+      const authToken = jwt.sign(data, secret);
       success = true;
 
       res.json({ success, authToken });
