@@ -17,11 +17,13 @@ async function testConnection() {
     // Import models after the database connection is established
     const projectDetails = require("../models/projectDetails");
     const User = require("../models/User");
+    const Task = require("../models/Task");
 
 
     // Sync models after importing
     await User.sync()
     await projectDetails.sync();
+    await Task.sync()
   } catch (error) {
     console.error("Unable to connect to the database:", error);
   }

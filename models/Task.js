@@ -1,28 +1,28 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
-const User = require("../models/User");
+const ProjectDetails = require("../models/projectDetails");
 
-const projectDetails = sequelize.define(
-  "projectDetails",
+const Task = sequelize.define(
+  "Task",
   {
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: "id",
-      },
-    },
-    project_id: {
+    task_id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    project_name: {
+    project_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: ProjectDetails,
+        key: "project_id",
+      },
+    },
+    task_name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    project_description: {
+    task_description: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -44,12 +44,16 @@ const projectDetails = sequelize.define(
     },
   },
   {
-    tableName: "project_details",
+    tableName: "tasks",
     timestamps: true,
     createdAt: "createdAt",
     updatedAt: "updatedAt",
   }
 );
-projectDetails.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
 
-module.exports = projectDetails;
+Task.belongsTo(ProjectDetails, {
+  foreignKey: "project_id",
+  targetKey: "project_id",
+});
+
+module.exports = Task;
