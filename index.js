@@ -13,6 +13,8 @@ app.use(express.json())
 
 app.use('/api', require('./routes/userRoutes'))
 app.use('/api', require('./routes/projectFormRoutes'))
+app.use('/api', require('./routes/TaskRoutes'))
+
 
 app.listen(PORT, () => {
   console.log(`Server Running on http://localhost:${PORT}`);

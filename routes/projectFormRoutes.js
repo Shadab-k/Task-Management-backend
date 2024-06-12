@@ -11,7 +11,9 @@ router.post(
   fetchUser,
   [
     body("projectName").notEmpty().withMessage("Project Name cannot be blank"),
-    body("projectDescription").notEmpty().withMessage("Project description cannot be blank"),
+    body("projectDescription")
+      .notEmpty()
+      .withMessage("Project description cannot be blank"),
     body("startDate").isDate().withMessage("Enter a valid start date"),
     body("endDate").isDate().withMessage("Enter a valid end date"),
     body("developer").notEmpty().withMessage("Developer Name cannot be blank"),
@@ -25,7 +27,14 @@ router.post(
 
     const userId = req.user.id;
 
-    const { projectName, projectDescription, startDate, endDate, developer, status } = req.body;
+    const {
+      projectName,
+      projectDescription,
+      startDate,
+      endDate,
+      developer,
+      status,
+    } = req.body;
 
     try {
       const projectData = await projectDetails.create({
@@ -70,150 +79,29 @@ router.get("/is-first-login", fetchUser, async (req, res) => {
 });
 
 
-// PUT endpoint to update project details
-router.put(
-  "/update-project/:id",
-  fetchUser,
-  [
-    body("projectName").notEmpty().withMessage("Enter a valid project name"),
-    body("projectDescription").notEmpty().withMessage("Project description cannot be blank"),
-    body("startDate").isDate().withMessage("Enter a valid start date"),
-    body("endDate").isDate().withMessage("Enter a valid end date"),
-    body("developer").notEmpty().withMessage("Enter a valid developer name"),
-    body("status").notEmpty().withMessage("Status cannot be null"),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const userId = req.user.id;
-    const { id } = req.params;
-    const { projectName, projectDescription, startDate, endDate, developer, status } = req.body;
-
-    try {
-      const project = await projectDetails.findOne({ where: { id, userId } });
-
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-
-      project.project_name = projectName;
-      project_description = projectDescription,
-      project.start_date = startDate;
-      project.end_date = endDate;
-      project.developer = developer;
-      project.status = status;
-
-      await project.save();
-
-      res.status(200).json(project);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send("Server Error");
-    }
-  }
-);
-
-// Roter of POST for creating Task 
-
-
-
-
-// router.post(
-//   "/add-task",
-//   fetchUser,
-//   [
-//     body("tasks").isArray().withMessage("Tasks should be an array"),
-//     body("tasks.*.taskName").notEmpty().withMessage("Task Name cannot be blank"),
-//     body("tasks.*.taskDescription").notEmpty().withMessage("Task description cannot be blank"),
-//     body("tasks.*.developer").notEmpty().withMessage("Enter a valid developer name"),
-//     body("tasks.*.startDate").isDate().withMessage("Enter a valid start date"),
-//     body("tasks.*.endDate").isDate().withMessage("Enter a valid end date"),
-//     body("tasks.*.status").notEmpty().withMessage("Status cannot be blank"),
-//   ],
-//   async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       return res.status(400).json({ errors: errors.array() });
-//     }
-
-//     const userId = req.user.id;
-//     const { projectId, tasks } = req.body;
-
-//     try {
-//       const taskData = tasks.map(task => ({
-//         project_id: projectId,
-//         task_name: task.taskName,
-//         task_description: task.taskDescription,
-//         start_date: task.startDate,
-//         end_date: task.endDate,
-//         developer: task.developer,
-//         status: task.status,
-//       }));
-
-//       const createdTasks = await Task.bulkCreate(taskData);
-//       res.status(201).json(createdTasks);
-//     } catch (error) {
-//       console.error(error.message);
-//       res.status(500).send("Server Error");
-//     }
-//   }
-// );
-
-router.post(
-  "/add-task",
-  fetchUser,
-  [
-    body("projectId").notEmpty().withMessage("Project ID is required"),
-    body("taskName").notEmpty().withMessage("Task Name cannot be blank"),
-    body("taskDescription").notEmpty().withMessage("Task description cannot be blank"),
-    body("developer").notEmpty().withMessage("Developer name cannot be blank"),
-    body("startDate").isDate().withMessage("Enter a valid start date"),
-    body("endDate").isDate().withMessage("Enter a valid end date"),
-    body("status").notEmpty().withMessage("Status cannot be blank"),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const userId = req.user.id;
-    const { projectId, taskName, taskDescription, developer, startDate, endDate, status } = req.body;
-
-    try {
-      const task = await Task.create({
-        project_id: projectId,
-        task_name: taskName,
-        task_description: taskDescription,
-        start_date: startDate,
-        end_date: endDate,
-        developer,
-        status,
-      });
-
-      res.status(201).json(task);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send("Server Error");
-    }
-  }
-);
-
-//Roter to GET all the tasks foa  specific project
-router.get("/tasks/:projectId", fetchUser, async (req, res) => {
+// PUT endpoint to update project details by project ID
+router.put("/update-project/:projectId", fetchUser, async (req, res) => {
   const { projectId } = req.params;
 
   try {
-    const tasks = await Task.findAll({ where: { project_id: projectId } });
+    // Check if the project exists
+    const project = await projectDetails.findByPk(projectId);
 
-    if (!tasks) {
-      return res.status(404).json({ msg: "No tasks found for this project" });
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
     }
 
-    res.status(200).json(tasks);
+    // Update project details
+    project.project_name = req.body.projectName;
+    project.project_description = req.body.projectDescription;
+    project.start_date = req.body.startDate;
+    project.end_date = req.body.endDate;
+    project.developer = req.body.developer;
+    project.status = req.body.status;
+
+    await project.save();
+
+    res.status(200).json(project);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Server Error");
@@ -222,4 +110,33 @@ router.get("/tasks/:projectId", fetchUser, async (req, res) => {
 
 module.exports = router;
 
+// DELETE endpoint to delete a project by its project ID
+router.delete("/delete-project/:projectId", fetchUser, async (req, res) => {
+  const { projectId } = req.params;
 
+  try {
+    // Check if the project exists
+    const project = await projectDetails.findByPk(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Delete all tasks associated with the project
+    await Task.destroy({ where: { project_id: projectId } });
+
+    // Delete the project
+    await project.destroy();
+
+    res
+      .status(200)
+      .json({ message: "Project and associated tasks deleted successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+module.exports = router;
